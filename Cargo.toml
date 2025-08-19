@@ -1,0 +1,10 @@
+[workspace]
+
+members = [
+    "grammer-and-syntax",
+    "hello_world",
+    "learn-trait",
+    "ownership",
+    "rw-lock",
+    "sorth-with-thread"
+]
