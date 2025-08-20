@@ -5,6 +5,7 @@ use std::{
     time::Duration,
 };
 
+// Arc・Rc <= スマートポインタ (参照カウンタを持つ賢いポインタだから) と呼ばれる
 fn main() {
     let gallery = Arc::new(RwLock::new(initialized_gallery()));
 
