@@ -1,5 +1,5 @@
 .vscode/
 
 # compiled files
-*/target/
-
+*/target
+target/
