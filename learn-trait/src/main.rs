@@ -3,7 +3,9 @@ use std::{
     fmt::{Display, Formatter},
     fs::File,
     io::prelude::*,
+    os::unix::thread,
     path::Path,
+    sync,
 };
 
 // 虚数
@@ -100,52 +102,52 @@ fn main() {
 
     // シリアライズ
 
-    #[derive(Debug, Clone, Deserialize, Serialize)]
-    enum List<T> {
-        Node { data: T, next: Box<List<T>> },
-        Nil,
-    }
+    // #[derive(Debug, Clone, Deserialize, Serialize)]
+    // enum List<T> {
+    //     Node { data: T, next: Box<List<T>> },
+    //     Nil,
+    // }
 
-    impl<T> List<T> {
-        fn new() -> List<T> {
-            List::Nil
-        }
+    // impl<T> List<T> {
+    //     fn new() -> List<T> {
+    //         List::Nil
+    //     }
 
-        // リストを消費して(ムーブセマンティクス)、そのリストの先頭に引数dataを追加したリストを返す
-        fn cons(self, data: T) -> List<T> {
-            List::Node {
-                data,
-                next: Box::new(self),
-            }
-        }
+    //     // リストを消費して(ムーブセマンティクス)、そのリストの先頭に引数dataを追加したリストを返す
+    //     fn cons(self, data: T) -> List<T> {
+    //         List::Node {
+    //             data,
+    //             next: Box::new(self),
+    //         }
+    //     }
 
-        // 不変イテレータを返す
-        fn iter<'a>(&'a self) -> ListIter<'a, T> {
-            ListIter { elm: self }
-        }
-    }
+    //     // 不変イテレータを返す
+    //     fn iter<'a>(&'a self) -> ListIter<'a, T> {
+    //         ListIter { elm: self }
+    //     }
+    // }
 
-    struct ListIter<'a, T> {
-        elm: &'a List<T>,
-    }
+    // struct ListIter<'a, T> {
+    //     elm: &'a List<T>,
+    // }
 
-    // Iteratorトレイとは片方向に進むことが可能なイテレータ <= 単方向リスト
-    // 双方向リストの場合、DoubleEndedIteratorトレイトを使う
-    impl<'a, T> Iterator for ListIter<'a, T> {
-        type Item = &'a T;
+    // // Iteratorトレイとは片方向に進むことが可能なイテレータ <= 単方向リスト
+    // // 双方向リストの場合、DoubleEndedIteratorトレイトを使う
+    // impl<'a, T> Iterator for ListIter<'a, T> {
+    //     type Item = &'a T;
 
-        fn next(&mut self) -> Option<Self::Item> {
-            match self.elm {
-                List::Node { data, next } => {
-                    self.elm = next;
-                    Some(data)
-                }
-                List::Nil => None,
-            }
-        }
-    }
+    //     fn next(&mut self) -> Option<Self::Item> {
+    //         match self.elm {
+    //             List::Node { data, next } => {
+    //                 self.elm = next;
+    //                 Some(data)
+    //             }
+    //             List::Nil => None,
+    //         }
+    //     }
+    // }
 
-    let list2 = List::new().cons(1).cons(2).cons(3);
+    // let list2 = List::new().cons(1).cons(2).cons(3);
 
     // println!("\n------------------- Serialized ------------------\n");
     // // Serialize to JSON
@@ -179,20 +181,87 @@ fn main() {
 
     // ファイルへ書き出し (上のコード利用))
 
-    let list3 = List::new().cons(1).cons(2).cons(3);
-    let yml = serde_yaml::to_string(&list3).unwrap();
+    // let list3 = List::new().cons(1).cons(2).cons(3);
+    // let yml = serde_yaml::to_string(&list3).unwrap();
 
-    let path = Path::new("test.yml");
-    let mut f = File::create(path).unwrap();
-    f.write_all(yml.as_bytes()).unwrap();
+    // let path = Path::new("test.yml");
+    // let mut f = File::create(path).unwrap();
+    // f.write_all(yml.as_bytes()).unwrap();
 
-    // ファイルからの読み出し
-    let path = Path::new("test.yml");
-    let mut f = File::open(path).unwrap();
-    let mut yml = String::new();
-    f.read_to_string(&mut yml).unwrap();
+    // // ファイルからのとれいと
+    // let path = Path::new("test.yml");
+    // let mut f = File::open(path).unwrap();
+    // let mut yml = String::new();
+    // f.read_to_string(&mut yml).unwrap();
 
-    // YAMLからデシリアライズ
-    let list3 = serde_yaml::from_str::<List<i32>>(&yml).unwrap();
-    println!("{:?}", list3);
+    // // YAMLからデシリアライズ
+    // let list3 = serde_yaml::from_str::<List<i32>>(&yml).unwrap();
+    // println!("{:?}", lisせいやく
+
+    /////////////////////////////////////////////////
+
+    //  トレイト制約
+
+    // 2乗する関数
+    // use std::ops::Mul;
+
+    // fn square<T>(x: T) -> T
+    // where
+    //     T: Mul<Output = T> + Copy,
+    // {
+    //     x * x
+    // }
+
+    // println!("{}", square(3));
+
+    // 以下のようにも書ける
+    // fn square<T: Mul<Output = T> + Copy>(x: T) -> T {
+    //     x * x
+    // }
+
+    // println!("{}", square(3));
+
+    //// Arc: 複数スレッド間での共有可能, Rc: 不可能
+    // Arcで
+    // use ::std::{sync::Arc, thread};
+
+    // let n = Arc::new(10);
+
+    // thread::spawn(move || {
+    //     println!("{n}");
+    // });
+
+    // Rcで <= 複数スレッド間での通信ができないため、エラー
+    // Syncトレイト(複数のスレッドからアクセスが可能)を実装していないためというエラーが出る
+    // use std::{rc::Rc, thread};
+
+    // let n = Rc::new(10);
+
+    // ↓ コンパイルエラー moveを書いてないから参照の方 => Syncトレイトがない
+    // let thr = thread::spawn(|| {
+    //     println!("{n}");
+    // });
+
+    // RcをArcで包んで密輸してやろう！！
+    // エラーだ...
+    // use std::{rc::Rc, sync::Arc, thread};
+
+    // let n = Arc::new(Rc::new(10));
+    // thread::spawn(move || {
+    //     println!("{n}");
+    // });
+
+    // さらにmutexで包んで見る！
+    // エラー !!
+    // use std::{
+    //     rc::Rc,
+    //     sync::{Arc, Mutex},
+    //     thread,
+    // };
+
+    // let n = Arc::new(Mutex::new(Rc::new(10)));
+    // thread::spawn(move || {
+    //     let n = n.lock().unwrap();
+    //     println!("{n}");
+    // });
 }
