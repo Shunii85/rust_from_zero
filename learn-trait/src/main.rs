@@ -200,7 +200,7 @@ fn main() {
 
     /////////////////////////////////////////////////
 
-    //  トレイト制約
+    //  トレイト制約 (ジェネリクスに制約をつけれるのは、トレイトだけ！！構造体とかは無理だよ)
 
     // 2乗する関数
     // use std::ops::Mul;
@@ -264,4 +264,96 @@ fn main() {
     //     let n = n.lock().unwrap();
     //     println!("{n}");
     // });
+
+    /////////////////////////////////////////////
+
+    // // 動的ディスパッチ
+
+    // trait Foo {
+    //     fn foo(&self);
+    // }
+
+    // struct Bar;
+    // impl Foo for Bar {
+    //     fn foo(&self) {
+    //         println!("Bar::foo");
+    //     }
+    // }
+
+    // struct Buzz;
+    // impl Foo for Buzz {
+    //     fn foo(&self) {
+    //         println!("Buzz::foo");
+    //     }
+    // }
+
+    // // コンパイル時にTが決まる
+    // fn call_foo_static<T: Foo>(arg: &T) {
+    //     arg.foo();
+    // }
+
+    // // 実行時に呼び出し先が決定される
+    // // &dyn はファットポインタ
+    // fn call_foo_dynamic(arg: &dyn Foo) {
+    //     arg.foo();
+    // }
+
+    // let bar = Bar;
+    // let buzz = Buzz;
+
+    // // 静的ディスパッチ
+    // println!("---------------- static ---------------");
+    // call_foo_static(&bar);
+    // // call_foo_static(&buzz);
+    // // 動的ディスパッチ
+    // println!("--------------- dynamic --------------");
+    // call_foo_dynamic(&bar);
+    // call_foo_dynamic(&buzz);
+
+    // ----------------------------------
+
+    // // 動的ディスパッチ利用例
+
+    // // Error: Debug + Display
+    // use std::{error::Error, fmt::Display};
+
+    // #[derive(Debug)]
+    // struct ErrorA;
+
+    // impl Display for ErrorA {
+    //     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    //         write!(f, "Error A")
+    //     }
+    // }
+
+    // impl Error for ErrorA {}
+
+    // #[derive(Debug)]
+    // struct ErrorB;
+
+    // impl Display for ErrorB {
+    //     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    //         write!(f, "Error B")
+    //     }
+    // }
+
+    // impl Error for ErrorB {}
+
+    // fn error_a() -> Result<(), ErrorA> {
+    //     Err(ErrorA)
+    // }
+    // fn error_b() -> Result<(), ErrorB> {
+    //     Err(ErrorB)
+    // }
+
+    // // ここで動的ディスパッチを利用することでErrorAもErrorBも同じ関数から返せる
+    // // なぜBox ?? => 返り値であるエラーのライフタイムがerror_ab関数内のみのため、それを永続化する必要があるから
+    // fn error_ab() -> Result<(), Box<dyn std::error::Error>> {
+    //     // ? 演算子 <= Box型に変換できる
+    //     error_a()?;
+    //     error_b()?;
+    //     Ok(())
+    // }
+
+    ////////////////////////////////////////////
 }
