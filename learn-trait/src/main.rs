@@ -356,4 +356,52 @@ fn main() {
     // }
 
     ////////////////////////////////////////////
+
+    //// スーパートレイト
+
+    // trait Location {
+    //     fn address(&self) -> &str;
+    // }
+
+    // trait Person {
+    //     fn name(&self) -> &str;
+    // }
+
+    // // Location・Person <= Houseのスーパートレイト
+    // trait House: Location + Person {}
+
+    // fn print_house_info(house: &dyn House) {
+    //     println!("所有者: {}", house.name());
+    //     println!("住所: {}", house.address());
+    // }
+
+    // struct MyHouse {
+    //     owner: String,
+    //     address: String,
+    // }
+
+    // impl Location for MyHouse {
+    //     fn address(&self) -> &str {
+    //         &self.address
+    //     }
+    // }
+
+    // impl Person for MyHouse {
+    //     fn name(&self) -> &str {
+    //         &self.owner
+    //     }
+    // }
+
+    // impl House for MyHouse {}
+
+    // let my_house = MyHouse {
+    //     owner: "Shunii".to_string(),
+    //     address: "xxxx-aaaaa-111-2".to_string(),
+    // };
+
+    // print_house_info(&my_house);
+
+    //////////////////////////////////////////
+
+    //
 }
