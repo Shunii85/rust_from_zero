@@ -3,7 +3,8 @@
 members = [
     "grammer-and-syntax",
     "hello_world",
-    "learn-trait",
+    "learn-trait", 
+    "module",
     "ownership",
     "rw-lock",
     "sorth-with-thread"
